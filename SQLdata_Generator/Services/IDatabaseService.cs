@@ -10,6 +10,7 @@ namespace SQLdata_Generator.Services
     {
         Task<bool> TestConnectionAsync(string connectionString);
         Task<List<ColumnInfo>> GetTableSchemaAsync(string connectionString, string tableName);
+        Task<List<TableInfo>> GetAllTablesAsync(string connectionString);
         Task InsertDataAsync(string connectionString, string tableName, DataTable data, IProgress<int> progress);
     }
 }

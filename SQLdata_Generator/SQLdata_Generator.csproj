@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
   </ItemGroup>

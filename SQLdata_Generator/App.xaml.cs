@@ -14,7 +14,13 @@ namespace SQLdata_Generator
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterSingleton<IConnectionService, ConnectionService>();
             containerRegistry.RegisterSingleton<IDatabaseService, DatabaseService>();
+            containerRegistry.RegisterSingleton<IExcelService, ExcelService>();
+
+            containerRegistry.RegisterForNavigation<DataGeneratorView>();
+            containerRegistry.RegisterForNavigation<DataImporterView>();
+            containerRegistry.RegisterForNavigation<DatabaseLoginView>();
         }
     }
 }

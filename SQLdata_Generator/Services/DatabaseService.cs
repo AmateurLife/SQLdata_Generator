@@ -57,6 +57,33 @@ namespace SQLdata_Generator.Services
             return columns;
         }
 
+        public async Task<List<TableInfo>> GetAllTablesAsync(string connectionString)
+        {
+            var tables = new List<TableInfo>();
+
+            using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            const string sql = @"
+                SELECT TABLE_NAME, TABLE_TYPE
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE'
+                ORDER BY TABLE_NAME";
+
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                tables.Add(new TableInfo
+                {
+                    TableName = reader["TABLE_NAME"]?.ToString() ?? string.Empty,
+                    TableType = reader["TABLE_TYPE"]?.ToString() ?? string.Empty
+                });
+            }
+
+            return tables;
+        }
+
         public async Task InsertDataAsync(string connectionString, string tableName, DataTable data, IProgress<int> progress)
         {
             using var conn = new SqlConnection(connectionString);
