@@ -19,8 +19,11 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0" Text="{Binding TableName, UpdateSourceTrigger=PropertyChanged}"
-                         Margin="3" VerticalAlignment="Center"/>
+                <ComboBox Grid.Column="0" ItemsSource="{Binding Tables}"
+                          SelectedItem="{Binding SelectedTable}"
+                          DisplayMemberPath="TableName"
+                          Margin="3" VerticalAlignment="Center"
+                          IsEnabled="{Binding ConnectionService.IsConnected}"/>
                 <Button Grid.Column="1" Content="加载表结构" Command="{Binding LoadSchemaCommand}"
                         Margin="3" Width="100" Height="26"/>
             </Grid>
