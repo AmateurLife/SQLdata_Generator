@@ -12,5 +12,12 @@ namespace SQLdata_Generator.Services
         Task<List<ColumnInfo>> GetTableSchemaAsync(string connectionString, string tableName);
         Task<List<TableInfo>> GetAllTablesAsync(string connectionString);
         Task InsertDataAsync(string connectionString, string tableName, DataTable data, IProgress<int> progress);
+
+        Task<List<string>> GetAllDatabasesAsync(string connectionString);
+        Task CreateDatabaseAsync(string connectionString, string databaseName);
+        Task DropDatabaseAsync(string connectionString, string databaseName);
+        Task CreateTableAsync(string connectionString, string tableName, string columnsDefinition);
+        Task DropTableAsync(string connectionString, string tableName);
+        Task ExecuteNonQueryAsync(string connectionString, string sql);
     }
 }

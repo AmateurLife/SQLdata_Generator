@@ -31,6 +31,7 @@ namespace SQLdata_Generator
 
             containerRegistry.RegisterForNavigation<DataGeneratorView>();
             containerRegistry.RegisterForNavigation<DataImporterView>();
+            containerRegistry.RegisterForNavigation<DatabaseManageView>();
             containerRegistry.RegisterForNavigation<DatabaseLoginView>();
         }
     }

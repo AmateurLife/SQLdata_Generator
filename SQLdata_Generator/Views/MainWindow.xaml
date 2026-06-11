@@ -70,6 +70,9 @@
                 <StackPanel Margin="5">
                     <TextBlock Text="功能使用栏" FontWeight="Bold" FontSize="17"
                                Margin="5,10,5,15" HorizontalAlignment="Center"/>
+                    <Button Content="数据库管理" Command="{Binding NavigateManageCommand}"
+                            Height="36" Margin="5,3"
+                            IsEnabled="{Binding IsNotOnManageView}"/>
                     <Button Content="模拟数据生成" Command="{Binding NavigateGeneratorCommand}"
                             Height="36" Margin="5,3"
                             IsEnabled="{Binding IsNotOnGeneratorView}"/>

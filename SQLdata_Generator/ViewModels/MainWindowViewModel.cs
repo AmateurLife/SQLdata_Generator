@@ -16,7 +16,7 @@ namespace SQLdata_Generator.ViewModels
             set => SetProperty(ref _title, value);
         }
 
-        private string _currentView = "DataGeneratorView";
+        private string _currentView = "DatabaseManageView";
         public string CurrentView
         {
             get => _currentView;
@@ -25,14 +25,17 @@ namespace SQLdata_Generator.ViewModels
                 SetProperty(ref _currentView, value);
                 RaisePropertyChanged(nameof(IsNotOnGeneratorView));
                 RaisePropertyChanged(nameof(IsNotOnImporterView));
+                RaisePropertyChanged(nameof(IsNotOnManageView));
             }
         }
 
         public bool IsNotOnGeneratorView => CurrentView != "DataGeneratorView";
         public bool IsNotOnImporterView => CurrentView != "DataImporterView";
+        public bool IsNotOnManageView => CurrentView != "DatabaseManageView";
 
         public DelegateCommand NavigateGeneratorCommand { get; }
         public DelegateCommand NavigateImporterCommand { get; }
+        public DelegateCommand NavigateManageCommand { get; }
 
         public MainWindowViewModel(IRegionManager regionManager)
         {
@@ -50,8 +53,14 @@ namespace SQLdata_Generator.ViewModels
                 CurrentView = "DataImporterView";
             });
 
+            NavigateManageCommand = new DelegateCommand(() =>
+            {
+                _regionManager.RequestNavigate("ContentRegion", "DatabaseManageView");
+                CurrentView = "DatabaseManageView";
+            });
+
             regionManager.RegisterViewWithRegion("LoginRegion", typeof(DatabaseLoginView));
-            regionManager.RegisterViewWithRegion("ContentRegion", typeof(DataGeneratorView));
+            regionManager.RegisterViewWithRegion("ContentRegion", typeof(DatabaseManageView));
         }
     }
 }

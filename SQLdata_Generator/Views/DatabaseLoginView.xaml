@@ -30,9 +30,11 @@
                      VerticalAlignment="Center" Margin="3"
                      ToolTip="服务器地址"/>
 
-            <TextBox Grid.Column="3" Text="{Binding Database, UpdateSourceTrigger=PropertyChanged}"
-                     VerticalAlignment="Center" Margin="3"
-                     ToolTip="数据库名"/>
+            <ComboBox Grid.Column="3" ItemsSource="{Binding ConnectionService.DatabaseList}"
+                      SelectedItem="{Binding Database}"
+                      VerticalAlignment="Center" Margin="3"
+                      IsEditable="True"
+                      ToolTip="选择数据库"/>
 
             <TextBox Grid.Column="4" Text="{Binding UserId, UpdateSourceTrigger=PropertyChanged}"
                      VerticalAlignment="Center" Margin="3"
@@ -46,10 +48,11 @@
                          Visibility="{Binding IsSqlAuth, Converter={StaticResource BoolToVisConverter}}"/>
 
             <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
-                <Button Content="测试连接" Command="{Binding TestConnectionCommand}"
+                <Button Content="连接服务器" Command="{Binding ServerConnectCommand}"
                         Width="80" Height="26" Margin="3,0"/>
                 <TextBlock Text="{Binding ConnectionStatus}"
-                           VerticalAlignment="Center" Margin="10,0" FontWeight="SemiBold"/>
+                           VerticalAlignment="Center" Margin="10,0" FontWeight="SemiBold"
+                           TextWrapping="Wrap" MaxWidth="500"/>
             </StackPanel>
         </Grid>
     </Border>

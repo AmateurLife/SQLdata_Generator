@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
 using Prism.Mvvm;
 
@@ -16,7 +17,11 @@ namespace SQLdata_Generator.Services
         public string Database
         {
             get => _database;
-            set => SetProperty(ref _database, value);
+            set
+            {
+                SetProperty(ref _database, value);
+                RaisePropertyChanged(nameof(IsConnected));
+            }
         }
 
         private string _authType = "SQL Server认证";
@@ -44,11 +49,24 @@ namespace SQLdata_Generator.Services
             set => SetProperty(ref _password, value);
         }
 
-        private bool _isConnected;
-        public bool IsConnected
+        private bool _isServerConnected;
+        public bool IsServerConnected
         {
-            get => _isConnected;
-            set => SetProperty(ref _isConnected, value);
+            get => _isServerConnected;
+            set
+            {
+                SetProperty(ref _isServerConnected, value);
+                RaisePropertyChanged(nameof(IsConnected));
+            }
+        }
+
+        public bool IsConnected => _isServerConnected && !string.IsNullOrEmpty(_database);
+
+        private List<string> _databaseList = new();
+        public List<string> DatabaseList
+        {
+            get => _databaseList;
+            set => SetProperty(ref _databaseList, value);
         }
 
         private string _connectionStatus = string.Empty;
@@ -74,7 +92,7 @@ namespace SQLdata_Generator.Services
             var builder = new SqlConnectionStringBuilder
             {
                 DataSource = Server,
-                InitialCatalog = Database,
+                InitialCatalog = string.IsNullOrEmpty(Database) ? "master" : Database,
                 TrustServerCertificate = true
             };
 

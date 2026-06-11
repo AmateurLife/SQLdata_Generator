@@ -110,5 +110,60 @@ namespace SQLdata_Generator.Services
             await bulkCopy.WriteToServerAsync(data);
             progress?.Report(100);
         }
+
+        public async Task<List<string>> GetAllDatabasesAsync(string connectionString)
+        {
+            var databases = new List<string>();
+
+            using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            const string sql = @"
+                SELECT name FROM sys.databases
+                WHERE database_id > 4
+                ORDER BY name";
+
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                databases.Add(reader["name"]?.ToString() ?? string.Empty);
+            }
+
+            return databases;
+        }
+
+        public async Task CreateDatabaseAsync(string connectionString, string databaseName)
+        {
+            var sql = $"CREATE DATABASE [{databaseName}]";
+            await ExecuteNonQueryAsync(connectionString, sql);
+        }
+
+        public async Task DropDatabaseAsync(string connectionString, string databaseName)
+        {
+            var sql = $"ALTER DATABASE [{databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{databaseName}]";
+            await ExecuteNonQueryAsync(connectionString, sql);
+        }
+
+        public async Task CreateTableAsync(string connectionString, string tableName, string columnsDefinition)
+        {
+            var sql = $"CREATE TABLE [{tableName}] ({columnsDefinition})";
+            await ExecuteNonQueryAsync(connectionString, sql);
+        }
+
+        public async Task DropTableAsync(string connectionString, string tableName)
+        {
+            var sql = $"DROP TABLE [{tableName}]";
+            await ExecuteNonQueryAsync(connectionString, sql);
+        }
+
+        public async Task ExecuteNonQueryAsync(string connectionString, string sql)
+        {
+            using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            using var cmd = new SqlCommand(sql, conn);
+            await cmd.ExecuteNonQueryAsync();
+        }
     }
 }

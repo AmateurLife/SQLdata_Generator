@@ -27,7 +27,7 @@ namespace SQLdata_Generator.ViewModels
                 {
                     _connService.Server = value;
                     RaisePropertyChanged();
-                    TestConnectionCommand.RaiseCanExecuteChanged();
+                    ServerConnectCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -41,7 +41,8 @@ namespace SQLdata_Generator.ViewModels
                 {
                     _connService.Database = value;
                     RaisePropertyChanged();
-                    TestConnectionCommand.RaiseCanExecuteChanged();
+                    if (!string.IsNullOrEmpty(value) && _connService.IsServerConnected)
+                        _ = LoadTablesAsync();
                 }
             }
         }
@@ -98,7 +99,7 @@ namespace SQLdata_Generator.ViewModels
             }
         }
 
-        public DelegateCommand TestConnectionCommand { get; }
+        public DelegateCommand ServerConnectCommand { get; }
 
         public DatabaseLoginViewModel(IConnectionService connService, IDatabaseService dbService)
         {
@@ -113,34 +114,55 @@ namespace SQLdata_Generator.ViewModels
                 }
             };
 
-            TestConnectionCommand = new DelegateCommand(
-                async () => await TestConnectionAsync(),
-                () => !string.IsNullOrWhiteSpace(Server) && !string.IsNullOrWhiteSpace(Database));
+            ServerConnectCommand = new DelegateCommand(
+                async () => await ConnectToServerAsync(),
+                () => !string.IsNullOrWhiteSpace(Server));
         }
 
-        private async Task TestConnectionAsync()
+        private async Task ConnectToServerAsync()
         {
-            ConnectionStatus = "正在连接...";
+            ConnectionStatus = "正在连接服务器...";
+            _connService.Database = string.Empty;
+            _connService.DatabaseList = new List<string>();
+            _connService.IsServerConnected = false;
+            _connService.TableCount = 0;
+
             try
             {
                 var success = await _dbService.TestConnectionAsync(_connService.ConnectionString);
-                _connService.IsConnected = success;
+                _connService.IsServerConnected = success;
 
                 if (success)
                 {
-                    var tables = await _dbService.GetAllTablesAsync(_connService.ConnectionString);
-                    _connService.TableCount = tables.Count;
-                    ConnectionStatus = $"✓ 已连接，共发现 {tables.Count} 个表";
+                    var databases = await _dbService.GetAllDatabasesAsync(_connService.ConnectionString);
+                    _connService.DatabaseList = databases;
+                    ConnectionStatus = $"✓ 已连接服务器，共 {databases.Count} 个库，请选择数据库";
                 }
                 else
                 {
-                    ConnectionStatus = "✗ 连接失败";
+                    ConnectionStatus = "✗ 服务器连接失败";
                 }
             }
             catch (Exception ex)
             {
-                ConnectionStatus = $"✗ 连接失败: {ex.Message}";
-                _connService.IsConnected = false;
+                ConnectionStatus = $"✗ 服务器连接失败: {ex.Message}";
+                _connService.IsServerConnected = false;
+            }
+        }
+
+        private async Task LoadTablesAsync()
+        {
+            ConnectionStatus = "正在加载表信息...";
+            try
+            {
+                var tables = await _dbService.GetAllTablesAsync(_connService.ConnectionString);
+                _connService.TableCount = tables.Count;
+                ConnectionStatus = $"✓ 已连接，共 {tables.Count} 个表";
+            }
+            catch (Exception ex)
+            {
+                ConnectionStatus = $"✗ 加载表信息失败: {ex.Message}";
+                _connService.Database = string.Empty;
             }
         }
     }
