@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:SQLdata_Generator"
              xmlns:prism="http://prismlibrary.com/" >
     <Application.Resources>
-         
+        <FontFamily x:Key="iconfont">
+            pack://application:,,,/Assets/Fonts/#iconfont
+        </FontFamily>
     </Application.Resources>
 </prism:PrismApplication>

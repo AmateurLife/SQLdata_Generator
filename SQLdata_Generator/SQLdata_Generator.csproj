@@ -3,10 +3,27 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\he8fq-b63dz-001.ico</ApplicationIcon>
+	<AssemblyName>数据库部署助手</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\jzs2s-hequ4-001.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\he8fq-b63dz-001.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Fonts\iconfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Resources\jzs2s-hequ4-001.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
   </ItemGroup>
+
 </Project>

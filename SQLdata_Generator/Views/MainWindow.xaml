@@ -2,17 +2,65 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding Title}" Height="800" Width="1050" MinHeight="550" MinWidth="900">
+        Title="SQL数据生成器" Height="800" Width="1050" MinHeight="550" MinWidth="900"
+        WindowStyle="None" ResizeMode="CanResizeWithGrip"
+        StateChanged="Window_StateChanged">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="5"
+                            CornerRadius="0" GlassFrameThickness="0"/>
+    </shell:WindowChrome.WindowChrome>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ContentControl Grid.Row="0" prism:RegionManager.RegionName="LoginRegion"/>
+        <Border Grid.Row="0" Background="#2D2D30"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="1">
+                <StackPanel Grid.Column="0" Orientation="Horizontal"
+                            VerticalAlignment="Center" Margin="10,0,0,0">
+                    <TextBlock x:Name="TitleIconText" Text="&#xe659;"
+                               FontSize="16" Foreground="#4FC3F7" Margin="0,0,6,0"
+                               VerticalAlignment="Center" FontFamily="/Assets/Fonts/#iconfont"/>
+                    <TextBlock Text="数据库部署助手" Foreground="White"
+                               FontSize="13" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="MinimizeButton" Content="─"
+                            Click="MinimizeButton_Click" ToolTip="最小化"
+                            Width="46" Height="32"
+                            Background="Transparent" Foreground="#CCCCCC"
+                            BorderThickness="0" FontSize="12"
+                            Cursor="Hand"/>
+                    <Button x:Name="MaximizeButton" Content="□"
+                            Click="MaximizeButton_Click" ToolTip="最大化"
+                            Width="46" Height="32"
+                            Background="Transparent" Foreground="#CCCCCC"
+                            BorderThickness="0" FontSize="14"
+                            Cursor="Hand"/>
+                    <Button x:Name="CloseButton" Content="✕"
+                            Click="CloseButton_Click" ToolTip="关闭"
+                            Width="46" Height="32"
+                            Background="Transparent" Foreground="#CCCCCC"
+                            BorderThickness="0" FontSize="14"
+                            Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ContentControl Grid.Row="1" prism:RegionManager.RegionName="LoginRegion"/>
+
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
@@ -20,12 +68,12 @@
 
             <Border Grid.Column="0" Background="#F0F0F0" BorderBrush="#D0D0D0" BorderThickness="0,0,1,0">
                 <StackPanel Margin="5">
-                    <TextBlock Text="SQL数据工具" FontWeight="Bold" FontSize="13"
+                    <TextBlock Text="功能使用栏" FontWeight="Bold" FontSize="17"
                                Margin="5,10,5,15" HorizontalAlignment="Center"/>
-                    <Button Content="数据生成" Command="{Binding NavigateGeneratorCommand}"
+                    <Button Content="模拟数据生成" Command="{Binding NavigateGeneratorCommand}"
                             Height="36" Margin="5,3"
                             IsEnabled="{Binding IsNotOnGeneratorView}"/>
-                    <Button Content="数据导入" Command="{Binding NavigateImporterCommand}"
+                    <Button Content="配置数据导入" Command="{Binding NavigateImporterCommand}"
                             Height="36" Margin="5,3"
                             IsEnabled="{Binding IsNotOnImporterView}"/>
                 </StackPanel>
