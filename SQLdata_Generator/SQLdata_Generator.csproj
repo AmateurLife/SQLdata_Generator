@@ -13,9 +13,9 @@
     <Resource Include="Resources\he8fq-b63dz-001.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Fonts\iconfont.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Assets\Fonts\iconfont.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\jzs2s-hequ4-001.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

@@ -68,8 +68,14 @@
                     </Grid>
 
                     <!-- Drop Database -->
-                    <Button Grid.Row="3" Content="删除选中库" Command="{Binding DropDatabaseCommand}"
-                            Height="26" Margin="0,3" FontSize="12"/>
+                    <Button Grid.Row="3" Command="{Binding DropDatabaseCommand}"
+                            Height="26" Margin="0,3" FontSize="12">
+                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                            <TextBlock Text="&#xe69b;" FontFamily="/Assets/Fonts/#iconfont"
+                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBlock Text="删除选中库" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
                     <!-- Table Header -->
                     <TextBlock Grid.Row="4" Text="数据表列表" FontWeight="Bold" Margin="0,6,0,3"/>
@@ -81,8 +87,14 @@
                              Margin="0,0,0,3" MinHeight="80"/>
 
                     <!-- Drop Table -->
-                    <Button Grid.Row="6" Content="删除选中表" Command="{Binding DropTableCommand}"
-                            Height="26" Margin="0,3" FontSize="12" VerticalAlignment="Top"/>
+                    <Button Grid.Row="6" Command="{Binding DropTableCommand}"
+                            Height="26" Margin="0,3" FontSize="12" VerticalAlignment="Top">
+                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                            <TextBlock Text="&#xe6c3;" FontFamily="/Assets/Fonts/#iconfont"
+                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBlock Text="删除选中表" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </Grid>
             </Border>
 
@@ -229,9 +241,16 @@
                                       IsEnabled="{Binding IsIdentityEnabled}"
                                       VerticalAlignment="Center" Margin="5,0"
                                       ToolTip="仅数值类型可用"/>
-                            <Button Grid.Row="1" Grid.Column="7" Content="添加字段"
+                            <Button Grid.Row="1" Grid.Column="7"
+                                    HorizontalAlignment="Left"
                                     Command="{Binding AddColumnCommand}"
-                                    Width="80" Height="26" Margin="5,0" FontSize="12"/>
+                                    Height="26" Margin="5,0" FontSize="12">
+                                <StackPanel Orientation="Horizontal" Margin="3,0">
+                                    <TextBlock Text="&#xe77b;" FontFamily="/Assets/Fonts/#iconfont"
+                                               FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                    <TextBlock Text="添加字段" FontSize="12" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </GroupBox>
 
@@ -296,10 +315,22 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
-                                    <Button Content="下载模板" Command="{Binding DownloadTemplateCommand}"
-                                            Height="26" Width="80" Margin="0,0,8,0"/>
-                                    <Button Content="选择Excel并导入" Command="{Binding BulkImportFromExcelCommand}"
-                                            Height="26" Width="120"/>
+                                    <Button  Command="{Binding DownloadTemplateCommand}"
+                                            Height="26" Width="80" Margin="0,0,8,0">
+                                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                                            <TextBlock Text="&#xe614;" FontFamily="/Assets/Fonts/#iconfont"
+                                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                            <TextBlock Text="下载模板" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Command="{Binding BulkImportFromExcelCommand}"
+                                            Height="26" Width="120">
+                                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                                            <TextBlock Text="&#xe60b;" FontFamily="/Assets/Fonts/#iconfont"
+                                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                            <TextBlock Text="选择Excel并导入" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
                                 </StackPanel>
                                 <TextBlock Grid.Row="1" Text="{Binding BulkImportResult}"
                                            Foreground="#555" FontSize="12"
@@ -307,8 +338,14 @@
                                            Visibility="{Binding HasBulkImportResult, Converter={StaticResource BoolToVisConverter}}"/>
                             </Grid>
 
-                            <Button Grid.Row="5" Content="创建表" Command="{Binding CreateTableCommand}"
-                                    Height="26" Width="80" HorizontalAlignment="Left"/>
+                            <Button Grid.Row="5" Command="{Binding CreateTableCommand}"
+                                    Height="26" Width="80" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" Margin="3,0">
+                                    <TextBlock Text="&#xe83f;" FontFamily="/Assets/Fonts/#iconfont"
+                                               FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                    <TextBlock Text="创建表" FontSize="12" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </GroupBox>
                 </StackPanel>
