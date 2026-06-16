@@ -4,6 +4,9 @@
              xmlns:prism="http://prismlibrary.com/"
              xmlns:vm="clr-namespace:SQLdata_Generator.ViewModels"
              prism:ViewModelLocator.AutoWireViewModel="True">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -90,7 +93,7 @@
             <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <!-- Table Structure -->
-                    <GroupBox Header="表结构" Padding="5" Margin="0,0,0,5">
+                    <GroupBox Header="现有表结构" Padding="5" Margin="0,0,0,5">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -122,7 +125,7 @@
                     </GroupBox>
 
                     <!-- Add Column -->
-                    <GroupBox Header="添加字段" Padding="5" Margin="0,0,0,5">
+                    <GroupBox Header="对当前表添加单个字段" Padding="5" Margin="0,0,0,5">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -239,6 +242,9 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <Grid Grid.Row="0" Margin="0,0,0,5">
@@ -256,7 +262,7 @@
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="False" CanUserDeleteRows="True"
                                       HeadersVisibility="Column" RowHeaderWidth="0"
-                                      MaxHeight="150" VerticalScrollBarVisibility="Auto"
+                                       MaxHeight="120" VerticalScrollBarVisibility="Auto"
                                       Margin="0,0,0,5">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="字段名" Binding="{Binding ColumnName, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
@@ -277,17 +283,32 @@
                                 </DataGrid.Columns>
                             </DataGrid>
 
-                            <Grid Grid.Row="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Content="+添加列定义" Command="{Binding AddNewColumnDefCommand}"
-                                        Height="26" Width="90" Margin="0,0,10,0"/>
-                                <Button Grid.Column="1" Content="创建表" Command="{Binding CreateTableCommand}"
-                                        Height="26" Width="80"/>
+                            <Grid Grid.Row="2" Margin="0,3,0,0">
+                                <Button Content="+添加列定义" Command="{Binding AddNewColumnDefCommand}"
+                                        Height="26" Width="90" HorizontalAlignment="Left"/>
                             </Grid>
+
+                            <Separator Grid.Row="3" Margin="0,8,0,4"/>
+
+                            <Grid Grid.Row="4" Margin="0,0,0,5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                                    <Button Content="下载模板" Command="{Binding DownloadTemplateCommand}"
+                                            Height="26" Width="80" Margin="0,0,8,0"/>
+                                    <Button Content="选择Excel并导入" Command="{Binding BulkImportFromExcelCommand}"
+                                            Height="26" Width="120"/>
+                                </StackPanel>
+                                <TextBlock Grid.Row="1" Text="{Binding BulkImportResult}"
+                                           Foreground="#555" FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Visibility="{Binding HasBulkImportResult, Converter={StaticResource BoolToVisConverter}}"/>
+                            </Grid>
+
+                            <Button Grid.Row="5" Content="创建表" Command="{Binding CreateTableCommand}"
+                                    Height="26" Width="80" HorizontalAlignment="Left"/>
                         </Grid>
                     </GroupBox>
                 </StackPanel>

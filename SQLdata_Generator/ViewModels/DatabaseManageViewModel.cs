@@ -3,9 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using ClosedXML.Excel;
 using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
 using SQLdata_Generator.Models;
@@ -17,6 +20,7 @@ namespace SQLdata_Generator.ViewModels
     {
         private readonly IDatabaseService _dbService;
         private readonly IConnectionService _connService;
+        private readonly IExcelService _excelService;
 
         public IConnectionService ConnectionService => _connService;
 
@@ -207,6 +211,8 @@ namespace SQLdata_Generator.ViewModels
                 DropTableCommand.RaiseCanExecuteChanged();
                 AddColumnCommand.RaiseCanExecuteChanged();
                 DropColumnCommand.RaiseCanExecuteChanged();
+                DownloadTemplateCommand.RaiseCanExecuteChanged();
+                BulkImportFromExcelCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -219,6 +225,19 @@ namespace SQLdata_Generator.ViewModels
             set => SetProperty(ref _statusText, value);
         }
 
+        private string _bulkImportResult = string.Empty;
+        public string BulkImportResult
+        {
+            get => _bulkImportResult;
+            set
+            {
+                SetProperty(ref _bulkImportResult, value);
+                RaisePropertyChanged(nameof(HasBulkImportResult));
+            }
+        }
+
+        public bool HasBulkImportResult => !string.IsNullOrEmpty(_bulkImportResult);
+
         public DelegateCommand RefreshDatabasesCommand { get; }
         public DelegateCommand CreateDatabaseCommand { get; }
         public DelegateCommand DropDatabaseCommand { get; }
@@ -227,11 +246,14 @@ namespace SQLdata_Generator.ViewModels
         public DelegateCommand AddColumnCommand { get; }
         public DelegateCommand<string> DropColumnCommand { get; }
         public DelegateCommand AddNewColumnDefCommand { get; }
+        public DelegateCommand DownloadTemplateCommand { get; }
+        public DelegateCommand BulkImportFromExcelCommand { get; }
 
-        public DatabaseManageViewModel(IDatabaseService dbService, IConnectionService connService)
+        public DatabaseManageViewModel(IDatabaseService dbService, IConnectionService connService, IExcelService excelService)
         {
             _dbService = dbService;
             _connService = connService;
+            _excelService = excelService;
 
             RefreshDatabasesCommand = new DelegateCommand(
                 async () => await RefreshDatabasesAsync(), () => IsNotBusy);
@@ -264,6 +286,12 @@ namespace SQLdata_Generator.ViewModels
 
             AddNewColumnDefCommand = new DelegateCommand(
                 () => NewColumns.Add(new NewColumnDef()));
+
+            DownloadTemplateCommand = new DelegateCommand(
+                async () => await DownloadTemplateAsync(), () => IsNotBusy);
+
+            BulkImportFromExcelCommand = new DelegateCommand(
+                async () => await BulkImportFromExcelAsync(), () => IsNotBusy);
 
             _newColumns.CollectionChanged += (_, _) => CreateTableCommand.RaiseCanExecuteChanged();
 
@@ -493,6 +521,173 @@ namespace SQLdata_Generator.ViewModels
                 InitialCatalog = databaseName
             };
             return builder.ConnectionString;
+        }
+
+        private async Task DownloadTemplateAsync()
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "Excel files (*.xlsx)|*.xlsx",
+                FileName = $"{(!string.IsNullOrWhiteSpace(NewTableName) ? NewTableName : "表")}_字段模板.xlsx"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            IsBusy = true;
+            StatusText = "正在生成模板...";
+            try
+            {
+                using var workbook = new XLWorkbook();
+                var sheet = workbook.Worksheets.Add("字段定义");
+
+                string[] headers = ["字段名", "类型", "长度", "精度", "小数位", "可空", "自增"];
+                for (int i = 0; i < headers.Length; i++)
+                    sheet.Cell(1, i + 1).Value = headers[i];
+
+                int row = 2;
+                bool hasExisting = false;
+                if (!string.IsNullOrEmpty(SelectedDatabase) && !string.IsNullOrWhiteSpace(NewTableName))
+                {
+                    var columns = await _dbService.GetTableSchemaAsync(GetConnectionString(SelectedDatabase), NewTableName);
+                    if (columns.Count > 0)
+                    {
+                        foreach (var col in columns)
+                        {
+                            sheet.Cell(row, 1).Value = col.ColumnName;
+                            sheet.Cell(row, 2).Value = col.DataType;
+                            sheet.Cell(row, 3).Value = col.MaxLength?.ToString() ?? "";
+                            sheet.Cell(row, 4).Value = ColumnInfo.PrecisionDisplayTypes.Contains(col.DataType) ? col.NumericPrecision?.ToString() ?? "" : "";
+                            sheet.Cell(row, 5).Value = ColumnInfo.ScaleDisplayTypes.Contains(col.DataType) ? col.NumericScale?.ToString() ?? "" : "";
+                            sheet.Cell(row, 6).Value = col.IsNullable ? "是" : "否";
+                            sheet.Cell(row, 7).Value = col.IsIdentity ? "是" : "否";
+                            row++;
+                        }
+                        hasExisting = true;
+                    }
+                }
+                if (!hasExisting)
+                {
+                    sheet.Cell(row, 1).Value = "id";
+                    sheet.Cell(row, 2).Value = "int";
+                    sheet.Cell(row, 6).Value = "否";
+                    sheet.Cell(row, 7).Value = "是";
+                    row++;
+                    sheet.Cell(row, 1).Value = "name";
+                    sheet.Cell(row, 2).Value = "varchar";
+                    sheet.Cell(row, 3).Value = "50";
+                    sheet.Cell(row, 6).Value = "是";
+                    sheet.Cell(row, 7).Value = "否";
+                }
+
+                workbook.SaveAs(dialog.FileName);
+                StatusText = $"✓ 模板已保存到 {dialog.FileName}";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"✗ 生成模板失败: {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private async Task BulkImportFromExcelAsync()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = "Excel files (*.xlsx)|*.xlsx",
+                Title = "选择字段定义Excel文件"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            IsBusy = true;
+            StatusText = "正在导入...";
+            try
+            {
+                var dt = await Task.Run(() => _excelService.ReadExcel(dialog.FileName));
+                if (dt.Rows.Count == 0)
+                {
+                    BulkImportResult = "✗ Excel 文件中没有数据行";
+                    return;
+                }
+
+                int success = 0;
+                var errors = new List<string>();
+
+                for (int r = 0; r < dt.Rows.Count; r++)
+                {
+                    var row = dt.Rows[r];
+                    var colName = row[0]?.ToString()?.Trim() ?? "";
+                    var colType = row[1]?.ToString()?.Trim() ?? "";
+                    var length   = row[2]?.ToString()?.Trim() ?? "";
+                    var precision = row[3]?.ToString()?.Trim() ?? "";
+                    var scale    = row[4]?.ToString()?.Trim() ?? "";
+                    var nullable = row[5]?.ToString()?.Trim() ?? "";
+                    var identity = row[6]?.ToString()?.Trim() ?? "";
+
+                    if (string.IsNullOrEmpty(colName))
+                    {
+                        errors.Add($"第{r + 1}行: 字段名不能为空");
+                        continue;
+                    }
+                    if (!string.IsNullOrEmpty(colType) && !CommonColumnTypes.Contains(colType, StringComparer.OrdinalIgnoreCase))
+                    {
+                        errors.Add($"第{r + 1}行 '{colName}': 类型 '{colType}' 不在有效类型列表中");
+                        continue;
+                    }
+                    if (!string.IsNullOrEmpty(length) && (!int.TryParse(length, out int vl) || vl <= 0))
+                    {
+                        errors.Add($"第{r + 1}行 '{colName}': 长度 '{length}' 应为正整数");
+                        continue;
+                    }
+                    if (!string.IsNullOrEmpty(precision) && (!int.TryParse(precision, out int vp) || vp <= 0))
+                    {
+                        errors.Add($"第{r + 1}行 '{colName}': 精度 '{precision}' 应为正整数");
+                        continue;
+                    }
+                    if (!string.IsNullOrEmpty(scale) && (!int.TryParse(scale, out int vs) || vs <= 0))
+                    {
+                        errors.Add($"第{r + 1}行 '{colName}': 小数位 '{scale}' 应为正整数");
+                        continue;
+                    }
+
+                    bool isNull = !nullable.Equals("否", StringComparison.OrdinalIgnoreCase)
+                               && !nullable.Equals("NO", StringComparison.OrdinalIgnoreCase)
+                               && !nullable.Equals("false", StringComparison.OrdinalIgnoreCase)
+                               && !nullable.Equals("0");
+                    bool isIdent = identity.Equals("是", StringComparison.OrdinalIgnoreCase)
+                                || identity.Equals("YES", StringComparison.OrdinalIgnoreCase)
+                                || identity.Equals("true", StringComparison.OrdinalIgnoreCase)
+                                || identity.Equals("1");
+
+                    NewColumns.Add(new NewColumnDef
+                    {
+                        ColumnName = colName,
+                        ColumnType = colType,
+                        Length = length,
+                        Precision = precision,
+                        Scale = scale,
+                        IsNullable = isNull,
+                        IsIdentity = isIdent
+                    });
+                    success++;
+                }
+
+                var result = $"✓ 成功导入 {success} 个字段";
+                if (errors.Count > 0)
+                    result += "\n  " + string.Join("\n  ", errors);
+                BulkImportResult = result;
+                StatusText = $"✓ 成功导入 {success} 个字段";
+            }
+            catch (Exception ex)
+            {
+                BulkImportResult = $"✗ 导入失败: {ex.Message}";
+                StatusText = $"✗ 导入失败: {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }

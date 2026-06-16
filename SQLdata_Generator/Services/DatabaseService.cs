@@ -31,11 +31,15 @@ namespace SQLdata_Generator.Services
             await conn.OpenAsync();
 
             const string sql = @"
-                SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, CHARACTER_MAXIMUM_LENGTH,
-                       NUMERIC_PRECISION, NUMERIC_SCALE
-                FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_NAME = @tableName
-                ORDER BY ORDINAL_POSITION";
+                SELECT c.COLUMN_NAME, c.DATA_TYPE, c.IS_NULLABLE, c.CHARACTER_MAXIMUM_LENGTH,
+                       c.NUMERIC_PRECISION, c.NUMERIC_SCALE,
+                       CAST(ISNULL(sc.is_identity, 0) AS bit) AS IS_IDENTITY
+                FROM INFORMATION_SCHEMA.COLUMNS c
+                LEFT JOIN sys.objects o ON o.name = c.TABLE_NAME AND o.type = 'U'
+                    AND o.schema_id = SCHEMA_ID(ISNULL(c.TABLE_SCHEMA, 'dbo'))
+                LEFT JOIN sys.columns sc ON sc.object_id = o.object_id AND sc.name = c.COLUMN_NAME
+                WHERE c.TABLE_NAME = @tableName
+                ORDER BY c.ORDINAL_POSITION";
 
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@tableName", tableName);
@@ -49,8 +53,9 @@ namespace SQLdata_Generator.Services
                     DataType = reader["DATA_TYPE"]?.ToString() ?? string.Empty,
                     IsNullable = reader["IS_NULLABLE"]?.ToString() == "YES",
                     MaxLength = reader["CHARACTER_MAXIMUM_LENGTH"] as int?,
-                    NumericPrecision = reader["NUMERIC_PRECISION"] as int?,
-                    NumericScale = reader["NUMERIC_SCALE"] as int?
+                    NumericPrecision = reader["NUMERIC_PRECISION"] is DBNull ? null : Convert.ToInt32(reader["NUMERIC_PRECISION"]),
+                    NumericScale = reader["NUMERIC_SCALE"] as int?,
+                    IsIdentity = reader["IS_IDENTITY"] is not DBNull && (bool)reader["IS_IDENTITY"]
                 });
             }
 
