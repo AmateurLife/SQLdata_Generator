@@ -38,6 +38,9 @@ namespace SQLdata_Generator.ViewModels
         private static readonly HashSet<string> PrecisionTypes = new(StringComparer.OrdinalIgnoreCase)
             { "decimal", "numeric", "money", "smallmoney", "datetime2", "datetimeoffset", "time", "float", "real" };
 
+        private static readonly HashSet<string> IdentityTypes = new(StringComparer.OrdinalIgnoreCase)
+            { "tinyint", "smallint", "int", "bigint", "decimal", "numeric" };
+
         private ObservableCollection<string> _allDatabases = new();
         public ObservableCollection<string> AllDatabases
         {
@@ -140,9 +143,11 @@ namespace SQLdata_Generator.ViewModels
                 RaisePropertyChanged(nameof(IsLengthEnabled));
                 RaisePropertyChanged(nameof(IsPrecisionEnabled));
                 RaisePropertyChanged(nameof(IsScaleEnabled));
+                RaisePropertyChanged(nameof(IsIdentityEnabled));
                 if (!IsLengthEnabled) NewColumnLength = string.Empty;
                 if (!IsPrecisionEnabled) NewColumnPrecision = string.Empty;
                 if (!IsScaleEnabled) NewColumnScale = string.Empty;
+                if (!IsIdentityEnabled) NewColumnIsIdentity = false;
             }
         }
 
@@ -170,6 +175,15 @@ namespace SQLdata_Generator.ViewModels
         public bool IsLengthEnabled => StringTypes.Contains(NewColumnType);
         public bool IsPrecisionEnabled => PrecisionTypes.Contains(NewColumnType);
         public bool IsScaleEnabled => DecimalTypes.Contains(NewColumnType);
+
+        public bool IsIdentityEnabled => IdentityTypes.Contains(NewColumnType);
+
+        private bool _newColumnIsIdentity;
+        public bool NewColumnIsIdentity
+        {
+            get => _newColumnIsIdentity;
+            set => SetProperty(ref _newColumnIsIdentity, value);
+        }
 
         private bool _newColumnNullable = true;
         public bool NewColumnNullable
@@ -428,13 +442,16 @@ namespace SQLdata_Generator.ViewModels
             {
                 var typeDef = NewColumnDef.BuildTypeDef(NewColumnType, NewColumnLength, NewColumnPrecision, NewColumnScale);
                 var nullDef = NewColumnNullable ? "NULL" : "NOT NULL";
-                var sql = $"ALTER TABLE [{SelectedTable.TableName}] ADD [{NewColumnName}] {typeDef} {nullDef}";
+                var sql = NewColumnIsIdentity
+                    ? $"ALTER TABLE [{SelectedTable.TableName}] ADD [{NewColumnName}] {typeDef} {nullDef} IDENTITY(1,1)"
+                    : $"ALTER TABLE [{SelectedTable.TableName}] ADD [{NewColumnName}] {typeDef} {nullDef}";
                 await _dbService.ExecuteNonQueryAsync(GetConnectionString(SelectedDatabase), sql);
                 StatusText = $"✓ 列 [{NewColumnName}] 添加成功";
                 NewColumnName = string.Empty;
                 NewColumnLength = string.Empty;
                 NewColumnPrecision = string.Empty;
                 NewColumnScale = string.Empty;
+                NewColumnIsIdentity = false;
                 await LoadColumnsAsync(SelectedDatabase, SelectedTable.TableName);
             }
             catch (Exception ex)

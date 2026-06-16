@@ -46,10 +46,21 @@ namespace SQLdata_Generator.Models
             set => SetProperty(ref _isNullable, value);
         }
 
+        private bool _isIdentity;
+        public bool IsIdentity
+        {
+            get => _isIdentity;
+            set => SetProperty(ref _isIdentity, value);
+        }
+
         public string ToDefinition()
         {
             var typeDef = BuildTypeDef(ColumnType, Length, Precision, Scale);
-            return $"[{ColumnName}] {typeDef} {(IsNullable ? "NULL" : "NOT NULL")}";
+            var nullDef = IsNullable ? "NULL" : "NOT NULL";
+            var result = $"[{ColumnName}] {typeDef} {nullDef}";
+            if (IsIdentity)
+                result += " IDENTITY(1,1)";
+            return result;
         }
 
         public static string BuildTypeDef(string columnType, string length, string precision, string scale)

@@ -135,6 +135,7 @@
                                 <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
@@ -149,6 +150,8 @@
                             <TextBlock Grid.Row="0" Grid.Column="4" Text="小数位" FontSize="11"
                                        Foreground="#888" Margin="3,2,3,1"/>
                             <TextBlock Grid.Row="0" Grid.Column="5" Text="可空" FontSize="11"
+                                       Foreground="#888" Margin="6,2,3,1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="6" Text="自增" FontSize="11"
                                        Foreground="#888" Margin="6,2,3,1"/>
 
                             <TextBox Grid.Row="1" Grid.Column="0"
@@ -218,7 +221,12 @@
                             <CheckBox Grid.Row="1" Grid.Column="5"
                                       IsChecked="{Binding NewColumnNullable}"
                                       VerticalAlignment="Center" Margin="5,0"/>
-                            <Button Grid.Row="1" Grid.Column="6" Content="添加字段"
+                            <CheckBox Grid.Row="1" Grid.Column="6"
+                                      IsChecked="{Binding NewColumnIsIdentity}"
+                                      IsEnabled="{Binding IsIdentityEnabled}"
+                                      VerticalAlignment="Center" Margin="5,0"
+                                      ToolTip="仅数值类型可用"/>
+                            <Button Grid.Row="1" Grid.Column="7" Content="添加字段"
                                     Command="{Binding AddColumnCommand}"
                                     Width="80" Height="26" Margin="5,0" FontSize="12"/>
                         </Grid>
@@ -265,6 +273,7 @@
                                     <DataGridTextColumn Header="精度" Binding="{Binding Precision, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
                                     <DataGridTextColumn Header="小数位" Binding="{Binding Scale, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
                                     <DataGridCheckBoxColumn Header="可空" Binding="{Binding IsNullable, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                                    <DataGridCheckBoxColumn Header="自增" Binding="{Binding IsIdentity, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
                                 </DataGrid.Columns>
                             </DataGrid>
 
