@@ -4,7 +4,8 @@
         xmlns:prism="http://prismlibrary.com/"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="SQL数据生成器" Height="800" Width="1050" MinHeight="550" MinWidth="900"
+        Title="SQL数据生成器" Height="860" Width="1250" MinHeight="550" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="CanResizeWithGrip"
         StateChanged="Window_StateChanged">
     <shell:WindowChrome.WindowChrome>

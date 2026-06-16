@@ -25,6 +25,20 @@ namespace SQLdata_Generator.Models
             set => SetProperty(ref _length, value);
         }
 
+        private string _precision = string.Empty;
+        public string Precision
+        {
+            get => _precision;
+            set => SetProperty(ref _precision, value);
+        }
+
+        private string _scale = string.Empty;
+        public string Scale
+        {
+            get => _scale;
+            set => SetProperty(ref _scale, value);
+        }
+
         private bool _isNullable = true;
         public bool IsNullable
         {
@@ -34,10 +48,19 @@ namespace SQLdata_Generator.Models
 
         public string ToDefinition()
         {
-            var typeDef = ColumnType;
-            if (int.TryParse(Length, out int len) && len > 0)
-                typeDef = $"{ColumnType}({len})";
+            var typeDef = BuildTypeDef(ColumnType, Length, Precision, Scale);
             return $"[{ColumnName}] {typeDef} {(IsNullable ? "NULL" : "NOT NULL")}";
+        }
+
+        public static string BuildTypeDef(string columnType, string length, string precision, string scale)
+        {
+            if (int.TryParse(precision, out int p) && p > 0 && int.TryParse(scale, out int s) && s > 0)
+                return $"{columnType}({p}, {s})";
+            if (int.TryParse(precision, out int p2) && p2 > 0)
+                return $"{columnType}({p2})";
+            if (int.TryParse(length, out int len) && len > 0)
+                return $"{columnType}({len})";
+            return columnType;
         }
     }
 }

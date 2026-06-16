@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,6 +29,15 @@ namespace SQLdata_Generator.ViewModels
             "bit", "uniqueidentifier", "xml", "varbinary"
         ];
 
+        private static readonly HashSet<string> StringTypes = new(StringComparer.OrdinalIgnoreCase)
+            { "varchar", "nvarchar", "char", "nchar", "varbinary", "binary" };
+
+        private static readonly HashSet<string> DecimalTypes = new(StringComparer.OrdinalIgnoreCase)
+            { "decimal", "numeric", "money", "smallmoney" };
+
+        private static readonly HashSet<string> PrecisionTypes = new(StringComparer.OrdinalIgnoreCase)
+            { "decimal", "numeric", "money", "smallmoney", "datetime2", "datetimeoffset", "time", "float", "real" };
+
         private ObservableCollection<string> _allDatabases = new();
         public ObservableCollection<string> AllDatabases
         {
@@ -42,6 +52,8 @@ namespace SQLdata_Generator.ViewModels
             set
             {
                 SetProperty(ref _selectedDatabase, value);
+                CreateTableCommand.RaiseCanExecuteChanged();
+                DropDatabaseCommand.RaiseCanExecuteChanged();
                 if (!string.IsNullOrEmpty(value))
                     _ = LoadTablesAsync(value);
             }
@@ -62,6 +74,8 @@ namespace SQLdata_Generator.ViewModels
             {
                 SetProperty(ref _selectedTable, value);
                 DropTableCommand.RaiseCanExecuteChanged();
+                AddColumnCommand.RaiseCanExecuteChanged();
+                DropColumnCommand.RaiseCanExecuteChanged();
                 if (value != null && !string.IsNullOrEmpty(SelectedDatabase))
                     _ = LoadColumnsAsync(SelectedDatabase, value.TableName);
                 else
@@ -120,7 +134,16 @@ namespace SQLdata_Generator.ViewModels
         public string NewColumnType
         {
             get => _newColumnType;
-            set => SetProperty(ref _newColumnType, value);
+            set
+            {
+                SetProperty(ref _newColumnType, value);
+                RaisePropertyChanged(nameof(IsLengthEnabled));
+                RaisePropertyChanged(nameof(IsPrecisionEnabled));
+                RaisePropertyChanged(nameof(IsScaleEnabled));
+                if (!IsLengthEnabled) NewColumnLength = string.Empty;
+                if (!IsPrecisionEnabled) NewColumnPrecision = string.Empty;
+                if (!IsScaleEnabled) NewColumnScale = string.Empty;
+            }
         }
 
         private string _newColumnLength = string.Empty;
@@ -129,6 +152,24 @@ namespace SQLdata_Generator.ViewModels
             get => _newColumnLength;
             set => SetProperty(ref _newColumnLength, value);
         }
+
+        private string _newColumnPrecision = string.Empty;
+        public string NewColumnPrecision
+        {
+            get => _newColumnPrecision;
+            set => SetProperty(ref _newColumnPrecision, value);
+        }
+
+        private string _newColumnScale = string.Empty;
+        public string NewColumnScale
+        {
+            get => _newColumnScale;
+            set => SetProperty(ref _newColumnScale, value);
+        }
+
+        public bool IsLengthEnabled => StringTypes.Contains(NewColumnType);
+        public bool IsPrecisionEnabled => PrecisionTypes.Contains(NewColumnType);
+        public bool IsScaleEnabled => DecimalTypes.Contains(NewColumnType);
 
         private bool _newColumnNullable = true;
         public bool NewColumnNullable
@@ -145,6 +186,13 @@ namespace SQLdata_Generator.ViewModels
             {
                 SetProperty(ref _isBusy, value);
                 RaisePropertyChanged(nameof(IsNotBusy));
+                RefreshDatabasesCommand.RaiseCanExecuteChanged();
+                CreateDatabaseCommand.RaiseCanExecuteChanged();
+                DropDatabaseCommand.RaiseCanExecuteChanged();
+                CreateTableCommand.RaiseCanExecuteChanged();
+                DropTableCommand.RaiseCanExecuteChanged();
+                AddColumnCommand.RaiseCanExecuteChanged();
+                DropColumnCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -202,6 +250,8 @@ namespace SQLdata_Generator.ViewModels
 
             AddNewColumnDefCommand = new DelegateCommand(
                 () => NewColumns.Add(new NewColumnDef()));
+
+            _newColumns.CollectionChanged += (_, _) => CreateTableCommand.RaiseCanExecuteChanged();
 
             _connService.PropertyChanged += async (_, e) =>
             {
@@ -376,14 +426,15 @@ namespace SQLdata_Generator.ViewModels
             StatusText = $"正在添加列 [{NewColumnName}]...";
             try
             {
-                var typeDef = NewColumnType;
-                if (int.TryParse(NewColumnLength, out int len) && len > 0)
-                    typeDef = $"{NewColumnType}({len})";
+                var typeDef = NewColumnDef.BuildTypeDef(NewColumnType, NewColumnLength, NewColumnPrecision, NewColumnScale);
                 var nullDef = NewColumnNullable ? "NULL" : "NOT NULL";
                 var sql = $"ALTER TABLE [{SelectedTable.TableName}] ADD [{NewColumnName}] {typeDef} {nullDef}";
                 await _dbService.ExecuteNonQueryAsync(GetConnectionString(SelectedDatabase), sql);
                 StatusText = $"✓ 列 [{NewColumnName}] 添加成功";
                 NewColumnName = string.Empty;
+                NewColumnLength = string.Empty;
+                NewColumnPrecision = string.Empty;
+                NewColumnScale = string.Empty;
                 await LoadColumnsAsync(SelectedDatabase, SelectedTable.TableName);
             }
             catch (Exception ex)

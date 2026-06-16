@@ -104,11 +104,8 @@
                                       VerticalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="字段名" Binding="{Binding ColumnName}" Width="120"/>
-                                    <DataGridTextColumn Header="类型" Binding="{Binding DataType}" Width="80"/>
+                                    <DataGridTextColumn Header="类型" Binding="{Binding TypeDisplay}" Width="150"/>
                                     <DataGridTextColumn Header="可空" Binding="{Binding IsNullable}" Width="60"/>
-                                    <DataGridTextColumn Header="最大长度" Binding="{Binding MaxLength}" Width="80"/>
-                                    <DataGridTextColumn Header="精度" Binding="{Binding NumericPrecision}" Width="60"/>
-                                    <DataGridTextColumn Header="小数位" Binding="{Binding NumericScale}" Width="60"/>
                                     <DataGridTemplateColumn Header="操作" Width="60">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -127,23 +124,102 @@
                     <!-- Add Column -->
                     <GroupBox Header="添加字段" Padding="5" Margin="0,0,0,5">
                         <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="120"/>
-                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Text="{Binding NewColumnName, UpdateSourceTrigger=PropertyChanged}"
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="列名" FontSize="11"
+                                       Foreground="#888" Margin="3,2,3,1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="类型" FontSize="11"
+                                       Foreground="#888" Margin="3,2,3,1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="2" Text="长度" FontSize="11"
+                                       Foreground="#888" Margin="3,2,3,1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="精度" FontSize="11"
+                                       Foreground="#888" Margin="3,2,3,1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="4" Text="小数位" FontSize="11"
+                                       Foreground="#888" Margin="3,2,3,1"/>
+                            <TextBlock Grid.Row="0" Grid.Column="5" Text="可空" FontSize="11"
+                                       Foreground="#888" Margin="6,2,3,1"/>
+
+                            <TextBox Grid.Row="1" Grid.Column="0"
+                                     Text="{Binding NewColumnName, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="2" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{x:Static vm:DatabaseManageViewModel.CommonColumnTypes}"
+                            <ComboBox Grid.Row="1" Grid.Column="1"
+                                      ItemsSource="{x:Static vm:DatabaseManageViewModel.CommonColumnTypes}"
                                       SelectedItem="{Binding NewColumnType}"
                                       IsEditable="True" Margin="2" VerticalAlignment="Center"/>
-                            <TextBox Grid.Column="2" Text="{Binding NewColumnLength, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="2" VerticalAlignment="Center"/>
-                            <CheckBox Grid.Column="3" Content="可空" IsChecked="{Binding NewColumnNullable}"
+                            <Grid Grid.Row="1" Grid.Column="2">
+                                <TextBox Text="{Binding NewColumnLength, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding IsLengthEnabled}"
+                                         Margin="2" VerticalAlignment="Center"
+                                         ToolTip="varchar(50)→填50"/>
+                                <TextBlock Text="—" IsHitTestVisible="False"
+                                           Foreground="#AAAAAA" VerticalAlignment="Center"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsLengthEnabled}" Value="True">
+                                                    <Setter Property="Visibility" Value="Hidden"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="3">
+                                <TextBox Text="{Binding NewColumnPrecision, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding IsPrecisionEnabled}"
+                                         Margin="2" VerticalAlignment="Center"
+                                         ToolTip="decimal(18,3)→填18"/>
+                                <TextBlock Text="—" IsHitTestVisible="False"
+                                           Foreground="#AAAAAA" VerticalAlignment="Center"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPrecisionEnabled}" Value="True">
+                                                    <Setter Property="Visibility" Value="Hidden"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <Grid Grid.Row="1" Grid.Column="4">
+                                <TextBox Text="{Binding NewColumnScale, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding IsScaleEnabled}"
+                                         Margin="2" VerticalAlignment="Center"
+                                         ToolTip="decimal(18,3)→填3"/>
+                                <TextBlock Text="—" IsHitTestVisible="False"
+                                           Foreground="#AAAAAA" VerticalAlignment="Center"
+                                           HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsScaleEnabled}" Value="True">
+                                                    <Setter Property="Visibility" Value="Hidden"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                            <CheckBox Grid.Row="1" Grid.Column="5"
+                                      IsChecked="{Binding NewColumnNullable}"
                                       VerticalAlignment="Center" Margin="5,0"/>
-                            <Button Grid.Column="4" Content="添加字段" Command="{Binding AddColumnCommand}"
+                            <Button Grid.Row="1" Grid.Column="6" Content="添加字段"
+                                    Command="{Binding AddColumnCommand}"
                                     Width="80" Height="26" Margin="5,0" FontSize="12"/>
                         </Grid>
                     </GroupBox>
@@ -185,7 +261,9 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTextColumn Header="长度" Binding="{Binding Length, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
+                                    <DataGridTextColumn Header="长度" Binding="{Binding Length, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                                    <DataGridTextColumn Header="精度" Binding="{Binding Precision, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
+                                    <DataGridTextColumn Header="小数位" Binding="{Binding Scale, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
                                     <DataGridCheckBoxColumn Header="可空" Binding="{Binding IsNullable, UpdateSourceTrigger=PropertyChanged}" Width="60"/>
                                 </DataGrid.Columns>
                             </DataGrid>
