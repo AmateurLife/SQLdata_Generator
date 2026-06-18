@@ -26,13 +26,20 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <ComboBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-                          ItemsSource="{Binding ConnectionService.DatabaseList}"
-                          SelectedItem="{Binding SelectedDatabase}"
-                          IsEditable="True"
-                          Margin="3" VerticalAlignment="Center"
-                          ToolTip="选择数据库"
-                          IsEnabled="{Binding ConnectionService.IsServerConnected}"/>
+                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="目标数据库：" VerticalAlignment="Center" Margin="3"/>
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding ConnectionService.DatabaseList}"
+                              SelectedItem="{Binding SelectedDatabase}"
+                              IsEditable="True"
+                              Margin="3" VerticalAlignment="Center"
+                              ToolTip="选择数据库"
+                              IsEnabled="{Binding ConnectionService.IsServerConnected}"/>
+                </Grid>
                 <ComboBox Grid.Row="1" Grid.Column="0"
                           ItemsSource="{Binding Tables}"
                           SelectedItem="{Binding SelectedTable}"
