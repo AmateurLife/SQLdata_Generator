@@ -38,5 +38,26 @@ namespace SQLdata_Generator.Services
 
             return dt;
         }
+
+        public void WriteExcel(string filePath, DataTable data)
+        {
+            using var workbook = new XLWorkbook();
+            var sheet = workbook.Worksheets.Add("结果");
+
+            for (int c = 0; c < data.Columns.Count; c++)
+                sheet.Cell(1, c + 1).Value = data.Columns[c].ColumnName;
+
+            for (int r = 0; r < data.Rows.Count; r++)
+            {
+                for (int c = 0; c < data.Columns.Count; c++)
+                {
+                    var val = data.Rows[r][c];
+                    if (val != null && val != DBNull.Value)
+                        sheet.Cell(r + 2, c + 1).Value = val.ToString();
+                }
+            }
+
+            workbook.SaveAs(filePath);
+        }
     }
 }

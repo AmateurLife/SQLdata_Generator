@@ -4,7 +4,7 @@
         xmlns:prism="http://prismlibrary.com/"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="SQL数据生成器" Height="860" Width="1250" MinHeight="550" MinWidth="900"
+        Title="SQL数据生成器" Height="860" Width="1260" MinHeight="550" MinWidth="900"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" ResizeMode="CanResizeWithGrip"
         StateChanged="Window_StateChanged">
@@ -33,7 +33,7 @@
                                FontSize="16" Foreground="#4FC3F7" Margin="0,0,6,0"
                                VerticalAlignment="Center" FontFamily="/Assets/Fonts/#iconfont"/>
                     <TextBlock Text="数据库部署助手" Foreground="White"
-                               FontSize="13" VerticalAlignment="Center"/>
+                               FontSize="16" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -63,26 +63,50 @@
 
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="#F0F0F0" BorderBrush="#D0D0D0" BorderThickness="0,0,1,0">
                 <StackPanel Margin="5">
-                    <TextBlock Text="功能使用栏" FontWeight="Bold" FontSize="17"
+                    <TextBlock Text="功能使用栏" FontWeight="Bold" FontSize="18"
                                Margin="5,10,5,15" HorizontalAlignment="Center"/>
-                    <Button Content="数据库管理" Command="{Binding NavigateManageCommand}"
-                            Height="36" Margin="5,3"
-                            IsEnabled="{Binding IsNotOnManageView}"/>
-                    <Button Content="开发者模式" Command="{Binding NavigateDeveloperCommand}"
-                            Height="36" Margin="5,3"
-                            IsEnabled="{Binding IsNotOnDeveloperView}"/>
-                    <Button Content="模拟数据生成" Command="{Binding NavigateGeneratorCommand}"
-                            Height="36" Margin="5,3"
-                            IsEnabled="{Binding IsNotOnGeneratorView}"/>
-                    <Button Content="配置数据导入" Command="{Binding NavigateImporterCommand}"
-                            Height="36" Margin="5,3"
-                            IsEnabled="{Binding IsNotOnImporterView}"/>
+                    <Button Command="{Binding NavigateManageCommand}"
+                            Height="36" Margin="3,3"
+                            IsEnabled="{Binding IsNotOnManageView}">
+                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                            <TextBlock Text="&#xe6da;" FontFamily="/Assets/Fonts/#iconfont"
+                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBlock Text="数据库管理" FontSize="16" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding NavigateDeveloperCommand}"
+                            Height="36" Margin="3,3"
+                            IsEnabled="{Binding IsNotOnDeveloperView}">
+                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                            <TextBlock Text="&#xe65c;" FontFamily="/Assets/Fonts/#iconfont"
+                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBlock Text="开发者模式" FontSize="16" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding NavigateGeneratorCommand}"
+                            Height="36" Margin="3,3"
+                            IsEnabled="{Binding IsNotOnGeneratorView}">
+                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                            <TextBlock Text="&#xe6fc;" FontFamily="/Assets/Fonts/#iconfont"
+                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBlock Text="模拟数据生成" FontSize="16" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding NavigateImporterCommand}"
+                            Height="36" Margin="3,3"
+                            IsEnabled="{Binding IsNotOnImporterView}">
+                        <StackPanel Orientation="Horizontal" Margin="3,0">
+                            <TextBlock Text="&#xe9c0;" FontFamily="/Assets/Fonts/#iconfont"
+                                       FontSize="16" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                            <TextBlock Text="配置数据导入" FontSize="16" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
 

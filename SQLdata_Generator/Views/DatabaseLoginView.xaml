@@ -41,8 +41,14 @@
                          Visibility="{Binding IsSqlAuth, Converter={StaticResource BoolToVisConverter}}"/>
 
             <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
-                <Button Content="连接服务器" Command="{Binding ServerConnectCommand}"
-                        Width="80" Height="26" Margin="3,0"/>
+                <Button Command="{Binding ServerConnectCommand}"
+                        Width="100" Height="26" Margin="3,0">
+                    <StackPanel Orientation="Horizontal" Margin="3,0">
+                        <TextBlock Text="&#xe61d;" FontFamily="/Assets/Fonts/#iconfont"
+                                   VerticalAlignment="Center" Margin="0,0,3,0"/>
+                        <TextBlock Text="连接服务器" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
                 <TextBlock Text="{Binding ConnectionStatus}"
                            VerticalAlignment="Center" Margin="10,0" FontWeight="SemiBold"
                            TextWrapping="Wrap" MaxWidth="500"/>

@@ -3,9 +3,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Win32;
 using Prism.Commands;
 using Prism.Mvvm;
 using SQLdata_Generator.Models;
@@ -17,6 +19,7 @@ namespace SQLdata_Generator.ViewModels
     {
         private readonly IDatabaseService _dbService;
         private readonly IConnectionService _connService;
+        private readonly IExcelService _excelService;
 
         public IConnectionService ConnectionService => _connService;
 
@@ -145,6 +148,7 @@ namespace SQLdata_Generator.ViewModels
                 RaisePropertyChanged(nameof(IsNotBusy));
                 RefreshDatabasesCommand.RaiseCanExecuteChanged();
                 ExecuteSqlCommand.RaiseCanExecuteChanged();
+                SaveResultsCommand.RaiseCanExecuteChanged();
             }
         }
 
@@ -161,11 +165,13 @@ namespace SQLdata_Generator.ViewModels
         public DelegateCommand ShowStructureCommand { get; }
         public DelegateCommand ShowDataCommand { get; }
         public DelegateCommand ExecuteSqlCommand { get; }
+        public DelegateCommand SaveResultsCommand { get; }
 
-        public DeveloperViewModel(IDatabaseService dbService, IConnectionService connService)
+        public DeveloperViewModel(IDatabaseService dbService, IConnectionService connService, IExcelService excelService)
         {
             _dbService = dbService;
             _connService = connService;
+            _excelService = excelService;
 
             RefreshDatabasesCommand = new DelegateCommand(
                 async () => await RefreshDatabasesAsync(), () => IsNotBusy);
@@ -179,6 +185,10 @@ namespace SQLdata_Generator.ViewModels
             ExecuteSqlCommand = new DelegateCommand(
                 async () => await ExecuteSqlAsync(),
                 () => IsNotBusy && !string.IsNullOrWhiteSpace(SqlText) && !string.IsNullOrEmpty(SelectedDatabase));
+
+            SaveResultsCommand = new DelegateCommand(
+                SaveResults,
+                () => IsNotBusy && (HasQueryResults || HasQueryMessage));
 
             _connService.PropertyChanged += async (_, e) =>
             {
@@ -297,6 +307,37 @@ namespace SQLdata_Generator.ViewModels
             finally
             {
                 IsBusy = false;
+                SaveResultsCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        private void SaveResults()
+        {
+            if (HasQueryResults && QueryResults != null)
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "Excel文件 (*.xlsx)|*.xlsx",
+                    FileName = "查询结果.xlsx"
+                };
+                if (dialog.ShowDialog() == true)
+                {
+                    _excelService.WriteExcel(dialog.FileName, QueryResults.Table!);
+                    StatusText = $"✓ 查询结果已保存到 {dialog.FileName}";
+                }
+            }
+            else if (HasQueryMessage && !string.IsNullOrEmpty(QueryMessage))
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Filter = "文本文件 (*.txt)|*.txt",
+                    FileName = "执行结果.txt"
+                };
+                if (dialog.ShowDialog() == true)
+                {
+                    File.WriteAllText(dialog.FileName, QueryMessage);
+                    StatusText = $"✓ 执行结果已保存到 {dialog.FileName}";
+                }
             }
         }
 
