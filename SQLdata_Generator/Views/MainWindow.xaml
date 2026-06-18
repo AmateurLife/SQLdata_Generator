@@ -74,6 +74,9 @@
                     <Button Content="数据库管理" Command="{Binding NavigateManageCommand}"
                             Height="36" Margin="5,3"
                             IsEnabled="{Binding IsNotOnManageView}"/>
+                    <Button Content="开发者模式" Command="{Binding NavigateDeveloperCommand}"
+                            Height="36" Margin="5,3"
+                            IsEnabled="{Binding IsNotOnDeveloperView}"/>
                     <Button Content="模拟数据生成" Command="{Binding NavigateGeneratorCommand}"
                             Height="36" Margin="5,3"
                             IsEnabled="{Binding IsNotOnGeneratorView}"/>

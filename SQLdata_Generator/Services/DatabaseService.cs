@@ -170,5 +170,31 @@ namespace SQLdata_Generator.Services
             using var cmd = new SqlCommand(sql, conn);
             await cmd.ExecuteNonQueryAsync();
         }
+
+        public async Task<Models.SqlExecutionResult> ExecuteSqlAsync(string connectionString, string sql)
+        {
+            var result = new Models.SqlExecutionResult();
+
+            using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (reader.FieldCount > 0)
+            {
+                var dt = new DataTable();
+                dt.Load(reader);
+                result.ResultTable = dt;
+                result.IsQuery = true;
+            }
+            else
+            {
+                result.RowsAffected = reader.RecordsAffected;
+                result.IsQuery = false;
+            }
+
+            return result;
+        }
     }
 }

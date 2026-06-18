@@ -19,5 +19,6 @@ namespace SQLdata_Generator.Services
         Task CreateTableAsync(string connectionString, string tableName, string columnsDefinition);
         Task DropTableAsync(string connectionString, string tableName);
         Task ExecuteNonQueryAsync(string connectionString, string sql);
+        Task<Models.SqlExecutionResult> ExecuteSqlAsync(string connectionString, string sql);
     }
 }

@@ -13,17 +13,6 @@ namespace SQLdata_Generator.Services
             set => SetProperty(ref _server, value);
         }
 
-        private string _database = string.Empty;
-        public string Database
-        {
-            get => _database;
-            set
-            {
-                SetProperty(ref _database, value);
-                RaisePropertyChanged(nameof(IsConnected));
-            }
-        }
-
         private string _authType = "SQL Server认证";
         public string AuthType
         {
@@ -60,7 +49,7 @@ namespace SQLdata_Generator.Services
             }
         }
 
-        public bool IsConnected => _isServerConnected && !string.IsNullOrEmpty(_database);
+        public bool IsConnected => _isServerConnected;
 
         private List<string> _databaseList = new();
         public List<string> DatabaseList
@@ -92,7 +81,7 @@ namespace SQLdata_Generator.Services
             var builder = new SqlConnectionStringBuilder
             {
                 DataSource = Server,
-                InitialCatalog = string.IsNullOrEmpty(Database) ? "master" : Database,
+                InitialCatalog = "master",
                 TrustServerCertificate = true
             };
 

@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Prism.Commands;
 using Prism.Mvvm;
 using SQLdata_Generator.Models;
@@ -18,6 +19,26 @@ namespace SQLdata_Generator.ViewModels
         private readonly IConnectionService _connService;
 
         public IConnectionService ConnectionService => _connService;
+
+        private string _selectedDatabase = string.Empty;
+        public string SelectedDatabase
+        {
+            get => _selectedDatabase;
+            set
+            {
+                if (SetProperty(ref _selectedDatabase, value))
+                {
+                    SelectedTable = null;
+                    IsSchemaLoaded = false;
+                    RaisePropertyChanged(nameof(IsDatabaseSelected));
+                    LoadSchemaCommand.RaiseCanExecuteChanged();
+                    if (!string.IsNullOrEmpty(value))
+                        _ = LoadTablesAsync();
+                }
+            }
+        }
+
+        public bool IsDatabaseSelected => !string.IsNullOrEmpty(_selectedDatabase);
 
         private ObservableCollection<TableInfo> _tables = new();
         public ObservableCollection<TableInfo> Tables
@@ -125,7 +146,7 @@ namespace SQLdata_Generator.ViewModels
 
             LoadSchemaCommand = new DelegateCommand(
                 async () => await LoadSchemaAsync(),
-                () => !IsBusy && _connService.IsConnected && SelectedTable != null);
+                () => !IsBusy && IsDatabaseSelected && SelectedTable != null);
 
             GeneratePreviewCommand = new DelegateCommand(
                 GeneratePreview,
@@ -135,31 +156,35 @@ namespace SQLdata_Generator.ViewModels
                 async () => await SaveToDatabaseAsync(),
                 () => !IsBusy && PreviewData != null && PreviewData.Count > 0);
 
-            _connService.PropertyChanged += async (_, e) =>
+            _connService.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(IConnectionService.IsConnected))
+                if (e.PropertyName == nameof(IConnectionService.IsServerConnected))
                 {
                     LoadSchemaCommand.RaiseCanExecuteChanged();
-                    if (_connService.IsConnected)
-                        await LoadTablesAsync();
                 }
             };
-
-            if (_connService.IsConnected)
-                _ = LoadTablesAsync();
         }
 
         private async Task LoadTablesAsync()
         {
             try
             {
-                var tables = await _databaseService.GetAllTablesAsync(_connService.ConnectionString);
+                var tables = await _databaseService.GetAllTablesAsync(GetConnectionString(SelectedDatabase));
                 Tables = new ObservableCollection<TableInfo>(tables);
             }
             catch
             {
                 Tables = new ObservableCollection<TableInfo>();
             }
+        }
+
+        private string GetConnectionString(string databaseName)
+        {
+            var builder = new SqlConnectionStringBuilder(_connService.ConnectionString)
+            {
+                InitialCatalog = databaseName
+            };
+            return builder.ConnectionString;
         }
 
         private async Task LoadSchemaAsync()
@@ -169,7 +194,7 @@ namespace SQLdata_Generator.ViewModels
             IsBusy = true;
             try
             {
-                var columns = await _databaseService.GetTableSchemaAsync(_connService.ConnectionString, SelectedTable.TableName);
+                var columns = await _databaseService.GetTableSchemaAsync(GetConnectionString(SelectedDatabase), SelectedTable.TableName);
                 if (columns.Count == 0)
                 {
                     IsSchemaLoaded = false;
@@ -314,7 +339,7 @@ namespace SQLdata_Generator.ViewModels
                     ProgressText = $"已保存 {p}%...";
                 });
 
-                await _databaseService.InsertDataAsync(_connService.ConnectionString, SelectedTable.TableName, dt, progress);
+                await _databaseService.InsertDataAsync(GetConnectionString(SelectedDatabase), SelectedTable.TableName, dt, progress);
                 ProgressText = $"✓ 保存完成，共插入 {dt.Rows.Count} 条记录到 [{SelectedTable.TableName}]";
             }
             catch (Exception ex)

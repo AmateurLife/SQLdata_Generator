@@ -15,17 +15,35 @@
         <!-- Row 0: Table Selection -->
         <GroupBox Header="选择数据表" Grid.Row="0" Margin="0,0,0,5" Padding="5">
             <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="0" ItemsSource="{Binding Tables}"
+                <ComboBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                          ItemsSource="{Binding ConnectionService.DatabaseList}"
+                          SelectedItem="{Binding SelectedDatabase}"
+                          IsEditable="True"
+                          Margin="3" VerticalAlignment="Center"
+                          ToolTip="选择数据库"
+                          IsEnabled="{Binding ConnectionService.IsServerConnected}"/>
+                <ComboBox Grid.Row="1" Grid.Column="0"
+                          ItemsSource="{Binding Tables}"
                           SelectedItem="{Binding SelectedTable}"
                           DisplayMemberPath="TableName"
                           Margin="3" VerticalAlignment="Center"
-                          IsEnabled="{Binding ConnectionService.IsConnected}"/>
-                <Button Grid.Column="1" Content="加载表结构" Command="{Binding LoadSchemaCommand}"
-                        Margin="3" Width="100" Height="26"/>
+                          IsEnabled="{Binding IsDatabaseSelected}"/>
+                <Button Grid.Row="1" Grid.Column="1" Command="{Binding LoadSchemaCommand}"
+                        Margin="3" Width="100" Height="26">
+                    <StackPanel Orientation="Horizontal" Margin="3,0">
+                        <TextBlock Text="&#xe629;" FontFamily="/Assets/Fonts/#iconfont"
+                                   VerticalAlignment="Center" Margin="0,0,3,0"/>
+                        <TextBlock Text="加载表结构" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
             </Grid>
         </GroupBox>
 
@@ -119,8 +137,14 @@
             <TextBlock Grid.Column="0" Text="生成数量:" VerticalAlignment="Center" Margin="5,0"/>
             <TextBox Grid.Column="1" Text="{Binding RecordCount, UpdateSourceTrigger=PropertyChanged}"
                      Margin="3" VerticalAlignment="Center"/>
-            <Button Grid.Column="2" Content="生成预览" Command="{Binding GeneratePreviewCommand}"
-                    Margin="5,0" Width="80" Height="26"/>
+            <Button Grid.Column="2" Command="{Binding GeneratePreviewCommand}"
+                    Margin="5,0" Width="80" Height="26">
+                <StackPanel Orientation="Horizontal" Margin="3,0">
+                    <TextBlock Text="&#xe76e;" FontFamily="/Assets/Fonts/#iconfont"
+                               VerticalAlignment="Center" Margin="0,0,3,0"/>
+                    <TextBlock Text="生成预览" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- Row 3: Data Preview -->
@@ -141,8 +165,14 @@
                              Width="200" Height="18" Margin="3"/>
                 <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center" Margin="10,0"/>
             </StackPanel>
-            <Button Grid.Column="1" Content="保存到数据库" Command="{Binding SaveToDatabaseCommand}"
-                    Margin="3" Width="110" Height="28"/>
+            <Button Grid.Column="1" Command="{Binding SaveToDatabaseCommand}"
+                    Margin="3" Width="110" Height="28">
+                <StackPanel Orientation="Horizontal" Margin="3,0">
+                    <TextBlock Text="&#xe605;" FontFamily="/Assets/Fonts/#iconfont"
+                               VerticalAlignment="Center" Margin="0,0,3,0"/>
+                    <TextBlock Text="保存到数据库" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
         </Grid>
     </Grid>
 </UserControl>

@@ -32,21 +32,6 @@ namespace SQLdata_Generator.ViewModels
             }
         }
 
-        public string Database
-        {
-            get => _connService.Database;
-            set
-            {
-                if (_connService.Database != value)
-                {
-                    _connService.Database = value;
-                    RaisePropertyChanged();
-                    if (!string.IsNullOrEmpty(value) && _connService.IsServerConnected)
-                        _ = LoadTablesAsync();
-                }
-            }
-        }
-
         public string AuthType
         {
             get => _connService.AuthType;
@@ -122,7 +107,6 @@ namespace SQLdata_Generator.ViewModels
         private async Task ConnectToServerAsync()
         {
             ConnectionStatus = "正在连接服务器...";
-            _connService.Database = string.Empty;
             _connService.DatabaseList = new List<string>();
             _connService.IsServerConnected = false;
             _connService.TableCount = 0;
@@ -150,20 +134,5 @@ namespace SQLdata_Generator.ViewModels
             }
         }
 
-        private async Task LoadTablesAsync()
-        {
-            ConnectionStatus = "正在加载表信息...";
-            try
-            {
-                var tables = await _dbService.GetAllTablesAsync(_connService.ConnectionString);
-                _connService.TableCount = tables.Count;
-                ConnectionStatus = $"✓ 已连接，共 {tables.Count} 个表";
-            }
-            catch (Exception ex)
-            {
-                ConnectionStatus = $"✗ 加载表信息失败: {ex.Message}";
-                _connService.Database = string.Empty;
-            }
-        }
     }
 }

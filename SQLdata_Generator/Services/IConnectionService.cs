@@ -6,7 +6,6 @@ namespace SQLdata_Generator.Services
     public interface IConnectionService : INotifyPropertyChanged
     {
         string Server { get; set; }
-        string Database { get; set; }
         string AuthType { get; set; }
         string UserId { get; set; }
         string Password { get; set; }

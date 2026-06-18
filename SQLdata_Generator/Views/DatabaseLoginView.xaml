@@ -14,7 +14,6 @@
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -30,24 +29,18 @@
                      VerticalAlignment="Center" Margin="3"
                      ToolTip="服务器地址"/>
 
-            <ComboBox Grid.Column="3" ItemsSource="{Binding ConnectionService.DatabaseList}"
-                      SelectedItem="{Binding Database}"
-                      VerticalAlignment="Center" Margin="3"
-                      IsEditable="True"
-                      ToolTip="选择数据库"/>
-
-            <TextBox Grid.Column="4" Text="{Binding UserId, UpdateSourceTrigger=PropertyChanged}"
+            <TextBox Grid.Column="3" Text="{Binding UserId, UpdateSourceTrigger=PropertyChanged}"
                      VerticalAlignment="Center" Margin="3"
                      ToolTip="用户名"
                      Visibility="{Binding IsSqlAuth, Converter={StaticResource BoolToVisConverter}}"/>
 
-            <PasswordBox Grid.Column="5"
+            <PasswordBox Grid.Column="4"
                          helper:PasswordBoxHelper.Attach="True"
                          helper:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Width="120" VerticalAlignment="Center" Margin="3"
                          Visibility="{Binding IsSqlAuth, Converter={StaticResource BoolToVisConverter}}"/>
 
-            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+            <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
                 <Button Content="连接服务器" Command="{Binding ServerConnectCommand}"
                         Width="80" Height="26" Margin="3,0"/>
                 <TextBlock Text="{Binding ConnectionStatus}"

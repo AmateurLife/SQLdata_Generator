@@ -5,6 +5,7 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\he8fq-b63dz-001.ico</ApplicationIcon>
 	<AssemblyName>数据库部署助手</AssemblyName>
+	<Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Resources\jzs2s-hequ4-001.ico" />
