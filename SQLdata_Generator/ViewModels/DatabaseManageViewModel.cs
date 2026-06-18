@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +18,7 @@ using SQLdata_Generator.Services;
 
 namespace SQLdata_Generator.ViewModels
 {
-    public class DatabaseManageViewModel : BindableBase
+    public class DatabaseManageViewModel : BindableBase, IDisposable
     {
         private readonly IDatabaseService _dbService;
         private readonly IConnectionService _connService;
@@ -293,13 +295,9 @@ namespace SQLdata_Generator.ViewModels
             BulkImportFromExcelCommand = new DelegateCommand(
                 async () => await BulkImportFromExcelAsync(), () => IsNotBusy);
 
-            _newColumns.CollectionChanged += (_, _) => CreateTableCommand.RaiseCanExecuteChanged();
+            _newColumns.CollectionChanged += OnNewColumnsCollectionChanged;
 
-            _connService.PropertyChanged += async (_, e) =>
-            {
-                if (e.PropertyName == nameof(IConnectionService.IsServerConnected) && _connService.IsServerConnected)
-                    await RefreshDatabasesAsync();
-            };
+            _connService.PropertyChanged += OnConnServicePropertyChanged;
 
             if (_connService.IsServerConnected)
                 _ = RefreshDatabasesAsync();
@@ -700,6 +698,23 @@ namespace SQLdata_Generator.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private void OnNewColumnsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            CreateTableCommand.RaiseCanExecuteChanged();
+        }
+
+        private async void OnConnServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IConnectionService.IsServerConnected) && _connService.IsServerConnected)
+                await RefreshDatabasesAsync();
+        }
+
+        public void Dispose()
+        {
+            _newColumns.CollectionChanged -= OnNewColumnsCollectionChanged;
+            _connService.PropertyChanged -= OnConnServicePropertyChanged;
         }
     }
 }

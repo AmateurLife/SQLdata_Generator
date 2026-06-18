@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ using SQLdata_Generator.Services;
 
 namespace SQLdata_Generator.ViewModels
 {
-    public class DataImporterViewModel : BindableBase
+    public class DataImporterViewModel : BindableBase, IDisposable
     {
         private readonly IDatabaseService _dbService;
         private readonly IExcelService _excelService;
@@ -167,13 +168,7 @@ namespace SQLdata_Generator.ViewModels
                 async () => await SaveToDatabaseAsync(),
                 () => !IsBusy && _insertData != null && _insertData.Rows.Count > 0);
 
-            _connService.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(IConnectionService.IsServerConnected))
-                {
-                    LoadSchemaCommand.RaiseCanExecuteChanged();
-                }
-            };
+            _connService.PropertyChanged += OnConnServicePropertyChanged;
         }
 
         private async Task LoadTablesAsync()
@@ -215,8 +210,9 @@ namespace SQLdata_Generator.ViewModels
                 var mappings = columns.Select(c => new ColumnMappingViewModel(c));
                 ColumnMappings = new ObservableCollection<ColumnMappingViewModel>(mappings);
                 IsSchemaLoaded = true;
-                PreviewData = null;
+                _insertData?.Dispose();
                 _insertData = null;
+                PreviewData = null;
                 PreviewInfo = string.Empty;
                 ProgressValue = 0;
                 ProgressText = string.Empty;
@@ -249,8 +245,9 @@ namespace SQLdata_Generator.ViewModels
                 if (excelDt.Rows.Count == 0)
                 {
                     PreviewInfo = "Excel文件中没有数据";
-                    PreviewData = null;
+                    _insertData?.Dispose();
                     _insertData = null;
+                    PreviewData = null;
                     return;
                 }
 
@@ -274,6 +271,7 @@ namespace SQLdata_Generator.ViewModels
                     }
                 }
 
+                _insertData?.Dispose();
                 _insertData = BuildInsertDataTable(excelDt);
                 PreviewData = _insertData.DefaultView;
                 PreviewInfo = $"共读取 {_insertData.Rows.Count} 条记录，" +
@@ -338,6 +336,18 @@ namespace SQLdata_Generator.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private void OnConnServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IConnectionService.IsServerConnected))
+                LoadSchemaCommand.RaiseCanExecuteChanged();
+        }
+
+        public void Dispose()
+        {
+            _connService.PropertyChanged -= OnConnServicePropertyChanged;
+            _insertData?.Dispose();
         }
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -9,7 +10,7 @@ using SQLdata_Generator.Services;
 
 namespace SQLdata_Generator.ViewModels
 {
-    public class DatabaseLoginViewModel : BindableBase
+    public class DatabaseLoginViewModel : BindableBase, IDisposable
     {
         private readonly IConnectionService _connService;
         private readonly IDatabaseService _dbService;
@@ -91,13 +92,7 @@ namespace SQLdata_Generator.ViewModels
             _connService = connService;
             _dbService = dbService;
 
-            _connService.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(IConnectionService.AuthType))
-                {
-                    RaisePropertyChanged(nameof(IsSqlAuth));
-                }
-            };
+            _connService.PropertyChanged += OnConnServicePropertyChanged;
 
             ServerConnectCommand = new DelegateCommand(
                 async () => await ConnectToServerAsync(),
@@ -134,5 +129,15 @@ namespace SQLdata_Generator.ViewModels
             }
         }
 
+        private void OnConnServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IConnectionService.AuthType))
+                RaisePropertyChanged(nameof(IsSqlAuth));
+        }
+
+        public void Dispose()
+        {
+            _connService.PropertyChanged -= OnConnServicePropertyChanged;
+        }
     }
 }

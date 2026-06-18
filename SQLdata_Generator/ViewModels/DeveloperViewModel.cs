@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -15,7 +16,7 @@ using SQLdata_Generator.Services;
 
 namespace SQLdata_Generator.ViewModels
 {
-    public class DeveloperViewModel : BindableBase
+    public class DeveloperViewModel : BindableBase, IDisposable
     {
         private readonly IDatabaseService _dbService;
         private readonly IConnectionService _connService;
@@ -190,11 +191,7 @@ namespace SQLdata_Generator.ViewModels
                 SaveResults,
                 () => IsNotBusy && (HasQueryResults || HasQueryMessage));
 
-            _connService.PropertyChanged += async (_, e) =>
-            {
-                if (e.PropertyName == nameof(IConnectionService.IsServerConnected) && _connService.IsServerConnected)
-                    await RefreshDatabasesAsync();
-            };
+            _connService.PropertyChanged += OnConnServicePropertyChanged;
 
             if (_connService.IsServerConnected)
                 _ = RefreshDatabasesAsync();
@@ -255,6 +252,7 @@ namespace SQLdata_Generator.ViewModels
                 var columns = await _dbService.GetTableSchemaAsync(connStr, tableName);
                 ColumnInfos = new ObservableCollection<ColumnInfo>(columns);
 
+                TableData?.Table?.Dispose();
                 var dataResult = await _dbService.ExecuteSqlAsync(connStr,
                     $"SELECT TOP 5 * FROM [{tableName}]");
                 TableData = dataResult.IsQuery ? dataResult.ResultTable?.DefaultView : null;
@@ -265,6 +263,7 @@ namespace SQLdata_Generator.ViewModels
             {
                 StatusText = $"✗ 加载失败: {ex.Message}";
                 ColumnInfos = new ObservableCollection<ColumnInfo>();
+                TableData?.Table?.Dispose();
                 TableData = null;
             }
             finally
@@ -279,6 +278,7 @@ namespace SQLdata_Generator.ViewModels
 
             IsBusy = true;
             StatusText = "正在执行SQL...";
+            QueryResults?.Table?.Dispose();
             QueryResults = null;
             QueryMessage = null;
 
@@ -343,6 +343,7 @@ namespace SQLdata_Generator.ViewModels
 
         private void ClearResults()
         {
+            QueryResults?.Table?.Dispose();
             QueryResults = null;
             QueryMessage = null;
         }
@@ -354,6 +355,19 @@ namespace SQLdata_Generator.ViewModels
                 InitialCatalog = databaseName
             };
             return builder.ConnectionString;
+        }
+
+        private async void OnConnServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IConnectionService.IsServerConnected) && _connService.IsServerConnected)
+                await RefreshDatabasesAsync();
+        }
+
+        public void Dispose()
+        {
+            _connService.PropertyChanged -= OnConnServicePropertyChanged;
+            QueryResults?.Table?.Dispose();
+            TableData?.Table?.Dispose();
         }
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ using SQLdata_Generator.Services;
 
 namespace SQLdata_Generator.ViewModels
 {
-    public class DataGeneratorViewModel : BindableBase
+    public class DataGeneratorViewModel : BindableBase, IDisposable
     {
         private readonly IDatabaseService _databaseService;
         private readonly IConnectionService _connService;
@@ -156,13 +157,7 @@ namespace SQLdata_Generator.ViewModels
                 async () => await SaveToDatabaseAsync(),
                 () => !IsBusy && PreviewData != null && PreviewData.Count > 0);
 
-            _connService.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(IConnectionService.IsServerConnected))
-                {
-                    LoadSchemaCommand.RaiseCanExecuteChanged();
-                }
-            };
+            _connService.PropertyChanged += OnConnServicePropertyChanged;
         }
 
         private async Task LoadTablesAsync()
@@ -204,6 +199,7 @@ namespace SQLdata_Generator.ViewModels
                 var configs = columns.Select(c => new ColumnConfigViewModel(c));
                 ColumnConfigs = new ObservableCollection<ColumnConfigViewModel>(configs);
                 IsSchemaLoaded = true;
+                PreviewData?.Table?.Dispose();
                 PreviewData = null;
                 ProgressValue = 0;
                 ProgressText = string.Empty;
@@ -217,6 +213,12 @@ namespace SQLdata_Generator.ViewModels
         private void GeneratePreview()
         {
             if (ColumnConfigs.Count == 0) return;
+
+            if (PreviewData != null)
+            {
+                PreviewData.Table?.Dispose();
+                PreviewData = null;
+            }
 
             var dt = new DataTable();
             foreach (var config in ColumnConfigs)
@@ -350,6 +352,18 @@ namespace SQLdata_Generator.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private void OnConnServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IConnectionService.IsServerConnected))
+                LoadSchemaCommand.RaiseCanExecuteChanged();
+        }
+
+        public void Dispose()
+        {
+            _connService.PropertyChanged -= OnConnServicePropertyChanged;
+            PreviewData?.Table?.Dispose();
         }
     }
 }
