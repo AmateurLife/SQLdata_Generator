@@ -393,6 +393,12 @@ namespace SQLdata_Generator.ViewModels
         private async Task DropDatabaseAsync()
         {
             if (string.IsNullOrEmpty(SelectedDatabase)) return;
+            if (System.Windows.MessageBox.Show(
+                    $"确认删除数据库 [{SelectedDatabase}]？\n\n此操作不可撤销，数据库中所有数据将被永久删除。",
+                    "确认删除",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Warning) != System.Windows.MessageBoxResult.Yes)
+                return;
             IsBusy = true;
             StatusText = $"正在删除数据库 [{SelectedDatabase}]...";
             try
@@ -441,6 +447,12 @@ namespace SQLdata_Generator.ViewModels
         private async Task DropTableAsync()
         {
             if (SelectedTable == null || string.IsNullOrEmpty(SelectedDatabase)) return;
+            if (System.Windows.MessageBox.Show(
+                    $"确认删除表 [{SelectedTable.TableName}]？\n\n此操作不可撤销。",
+                    "确认删除",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Warning) != System.Windows.MessageBoxResult.Yes)
+                return;
             IsBusy = true;
             StatusText = $"正在删除表 [{SelectedTable.TableName}]...";
             try
